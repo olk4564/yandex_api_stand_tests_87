@@ -12,5 +12,5 @@ user_body = {
 }
 
 products_ids = {
-    "ids": [1, 2, 3, 4]
+    "ids": [1, 2, 3]
 } 
