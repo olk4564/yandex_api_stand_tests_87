@@ -5,44 +5,34 @@ import requests
 
 import data
 
-
-
-
-# Определяем функцию get_docs, которая не принимает параметров
-def get_docs():
-    return requests.get(configuration.URL_SERVICE + configuration.DOC_PATH)
-
-
-def get_logs():
-    return requests.get(configuration.URL_SERVICE + configuration.LOG_MAIN_PATH, params={"count": 20})
-
-response = get_logs()
-
-
-def get_users_table():
-    return requests.get(configuration.URL_SERVICE + configuration.USERS_TABLE_PATH)
-
-
-
-# Определение функции post_new_user для отправки POST-запроса на создание нового пользователя
 def post_new_user(body):
-    # Выполнение POST-запроса с использованием URL из конфигурационного файла, тела запроса и заголовков
-    # URL_SERVICE и CREATE_USER_PATH объединяются для формирования полного URL для запроса
-    # json=body используется для отправки данных пользователя в формате JSON
-    # headers=data.headers устанавливает заголовки запроса из модуля data
-    return requests.post(configuration.URL_SERVICE + configuration.CREATE_USER_PATH,
-                         json=body,
-                         headers=data.headers)
+    return requests.post (
+        configuration.URL_SERVICE +
+configuration.CREATE_USER_PATH,
+    json=body,
+    headers=data.headers
+    )
 
-response = post_new_user(data.user_body)
+def get_new_user_token():
+    response_user = post_new_user(data.user_body)
+    auth_token = response_user.json()["authToken"]
+    return auth_token
 
+def post_new_client_kit(kit_body):
+    auth_token = get_new_user_token()
+    current_headers = data.headers.copy()
+    current_headers["Authorization"] = f"Bearer {auth_token}"
 
-def post_products_kits(products_ids):
-    return requests.post(configuration.URL_SERVICE + configuration.PRODUCTS_KITS_PATH,
-                         json=products_ids)
+    response_kit = requests.post(
+        configuration.URL_SERVICE +
+        configuration.KITS_PATH,
+        json=kit_body,
+        headers=current_headers
+    )
 
-response = post_products_kits(data.products_ids)
+    return response_kit
 
-print(response.status_code)
-
-print(response.json())
+if __name__ == "__main__":
+    response = post_new_client_kit(data.kit_body)
+    print("Статус ответа:", response.status_code)
+    print("Тело ответа:", response.json())
